@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import initDB, { pool } from './database/database';
 import { authRouter } from './modules/auth/auth.route';
+import { userRouter } from './modules/user/user.route';
 
 const app = express()
 const port = 3000;
@@ -16,6 +17,7 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
 
 
 app.listen(port, () => {
