@@ -140,93 +140,34 @@ const getMyBookings = async (userId: string) => {
     }));
 };
 
-const getVehicleById = async (vehicleId: string) => {
+const updateBooking = async (bookingId: string, payload: Record<string, any>) => {
 
-    const result = await pool.query(
-        `SELECT * FROM vehicles WHERE id = $1;`,
-        [vehicleId]
-    );
-
-    if (result.rows.length === 0) {
-        throw new Error('Vehicle not found.');
-    }
-
-    result.rows[0].daily_rent_price = Number(result.rows[0].daily_rent_price);
-
-    return result.rows[0];
-}
-
-const updateVehicle = async (vehicleId: string, payload: Record<string, any>) => {
-
-    const existing = await pool.query(`SELECT * FROM vehicles WHERE id = $1`, [vehicleId]);
+    const existing = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [bookingId]);
 
     if (existing.rows.length === 0) {
-        throw new Error("Vehicle not found.");
+        throw new Error("Booking not found.");
     }
 
-    const vehicle = existing.rows[0];
-
-    // Merge old + new values
-    const updated = {
-        vehicle_name: payload.vehicle_name ?? vehicle.vehicle_name,
-        type: payload.type ?? vehicle.type,
-        registration_number: payload.registration_number ?? vehicle.registration_number,
-        daily_rent_price: payload.daily_rent_price ?? vehicle.daily_rent_price,
-        availability_status: payload.availability_status ?? vehicle.availability_status,
-    };
-
-    // Validation
-    if (updated.daily_rent_price <= 0) {
-        throw new Error("Daily rent price must be greater than 0.");
+    if (payload?.status == undefined) {
+        throw new Error("Status is required.");
     }
 
-    if (!["car", "bike", "van", "SUV"].includes(updated.type)) {
-        throw new Error("Type must be car, bike, van or SUV.");
+    const result = await pool.query(`UPDATE bookings SET status = $1 WHERE id = $2`, [payload.status, bookingId]);
+    
+    if (result.rowCount === 0) {
+        throw new Error("Failed to update booking.");
     }
 
-    if (!["available", "booked"].includes(updated.availability_status)) {
-        throw new Error("Availability status must be available or booked.");
-    }
+    const updated = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [bookingId]);
 
-    // Unique registration_number check
-    const check = await pool.query(
-        `SELECT id FROM vehicles WHERE registration_number = $1 AND id <> $2`,
-        [updated.registration_number, vehicleId]
-    );
-    if (check.rows.length > 0) {
-        throw new Error("Registration number already exists.");
-    }
+    return updated.rows[0];
 
-    // Simple update query
-    const result = await pool.query(
-        `UPDATE vehicles 
-         SET vehicle_name = $1, 
-             type = $2,
-             registration_number = $3,
-             daily_rent_price = $4,
-             availability_status = $5
-         WHERE id = $6
-         RETURNING *`,
-        [
-            updated.vehicle_name,
-            updated.type,
-            updated.registration_number,
-            updated.daily_rent_price,
-            updated.availability_status,
-            vehicleId
-        ]
-    );
-
-    result.rows[0].daily_rent_price = Number(result.rows[0].daily_rent_price);
-
-    return result.rows[0];
 };
 
 
 export const bookingService = {
     getAllBookings,
     createBooking,
-    getVehicleById,
-    updateVehicle,
+    updateBooking,
     getMyBookings
 }

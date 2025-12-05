@@ -37,7 +37,7 @@ const getAllBookings = async (req: Request, res: Response) => {
 
         let bookings;
         let message = "";
-        
+
         if (req.user!.role === Roles.CUSTOMER) {
             bookings = await bookingService.getMyBookings(req.user!.id);
             message = "Your bookings retrieved successfully";
@@ -69,45 +69,55 @@ const getAllBookings = async (req: Request, res: Response) => {
 
 }
 
-const getSingleVehicle = async (req: Request, res: Response) => {
+const updateBooking = async (req: Request, res: Response) => {
 
     try {
 
-        const vehicle = await bookingService.getVehicleById(req.params.vehicleId as string);
+        const bookingId = req.params.bookingId as string;
 
-        vehicle.daily_rent_price = Number(vehicle.daily_rent_price);
+        const updateBooking = await bookingService.updateBooking(bookingId as string, req.body);
 
-        res.status(200).json({
-            success: true,
-            message: "Vehicle retrieved successfully",
-            data: vehicle
-        });
+        if (req?.body?.status == 'cancelled') {
+            res.status(200).json({
+                success: true,
+                message: "Booking cancelled successfully",
+                data: {
+                    id: updateBooking.id,
+                    customer_id: Number(updateBooking.customer_id),
+                    vehicle_id: Number(updateBooking.vehicle_id),
+                    rent_start_date: updateBooking.rent_start_date.toISOString().split('T')[0],
+                    rent_end_date: updateBooking.rent_end_date.toISOString().split('T')[0],
+                    total_price: Number(updateBooking.total_price),
+                    status: updateBooking.status
+                }
+            });
+        }
 
-    } catch (err: any) {
-        res.status(500).json({
-            success: false,
-            message: err.message
-        });
-    }
+        if (req?.body?.status == 'returned') {
 
-}
+            const vehicleId = updateBooking.vehicle_id;
+            await vehicleService.getVehicleById(vehicleId);
+            await vehicleService.updateVehicle(vehicleId, { availability_status: "available" });
 
-const updateVehicle = async (req: Request, res: Response) => {
+            const updateVehicle = await vehicleService.getVehicleById(updateBooking.vehicle_id);
 
-    try {
-
-        const vehicleId = req.params.vehicleId as string;
-
-        await bookingService.getVehicleById(vehicleId as string);
-
-        const updateVehicle = await bookingService.updateVehicle(vehicleId as string, req.body);
-
-        res.status(200).json({
-            success: true,
-            message: "Booking created successfully",
-            data: updateVehicle
-        });
-
+            res.status(200).json({
+                success: true,
+                message: "Booking marked as returned. Vehicle is now available",
+                data: {
+                    id: updateBooking.id,
+                    customer_id: Number(updateBooking.customer_id),
+                    vehicle_id: Number(updateBooking.vehicle_id),
+                    rent_start_date: updateBooking.rent_start_date.toISOString().split('T')[0],
+                    rent_end_date: updateBooking.rent_end_date.toISOString().split('T')[0],
+                    total_price: Number(updateBooking.total_price),
+                    status: updateBooking.status,
+                    vehicle: {
+                        availability_status: updateVehicle.availability_status
+                    }
+                }
+            });
+        }
     } catch (err: any) {
         res.status(500).json({
             success: false,
@@ -121,6 +131,5 @@ const updateVehicle = async (req: Request, res: Response) => {
 export const bookingController = {
     createBooking,
     getAllBookings,
-    getSingleVehicle,
-    updateVehicle
+    updateBooking
 }
