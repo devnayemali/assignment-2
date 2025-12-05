@@ -3,6 +3,7 @@ import { userService } from "./user.service";
 import { Roles } from "../auth/auth.constant";
 import { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../database/database";
+import { bookingService } from "../booking/booking.service";
 
 const getAllUsers = async (req: Request, res: Response) => {
 
@@ -61,6 +62,12 @@ const deleteUser = async (req: Request, res: Response) => {
         const userId = req.params.userId as string;
 
         await userService.getUserById(userId as string);
+
+        const activeBooking = await bookingService.getActiveBookingByUserId(userId as string);
+
+        if (activeBooking) {
+            throw new Error('This user has active booking. Cannot delete.');
+        }
 
         await userService.deleteUser(userId as string);
 

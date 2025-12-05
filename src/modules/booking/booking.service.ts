@@ -200,11 +200,20 @@ const getActiveBookingByVehicleId = async (vehicleId: string) => {
     return result.rows[0];
 }
 
+const getActiveBookingByUserId = async (userId: string) => {
+    const result = await pool.query(
+        `SELECT * FROM bookings WHERE customer_id = $1 and status = 'active'`,
+        [userId]
+    );
+    return result.rows[0];
+}
+
 export const bookingService = {
     getAllBookings,
     createBooking,
     updateBooking,
     getMyBookings,
     autoBookingReturn,
-    getActiveBookingByVehicleId
+    getActiveBookingByVehicleId,
+    getActiveBookingByUserId
 }
