@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../../database/database";
+import { JwtPayload } from "jsonwebtoken";
+import { Roles } from "../auth/auth.constant";
 
 const getAllUsers = async () => {
 
@@ -33,7 +35,17 @@ const getUserById = async (userId: string) => {
     return result;
 }
 
-const updateUser = async (userId: string, payload: Record<string, unknown>) => {
+const updateUser = async (userId: string, payload: Record<string, unknown>, authUser: JwtPayload) => {
+
+    const authUserId = authUser.id;
+    const authUserRole = authUser.role;
+
+    if (authUserRole == Roles.CUSTOMER && authUserId == userId) {
+        userId = authUserId;
+    } else if (authUserRole === Roles.CUSTOMER && authUserId != userId) {
+        throw new Error("You are not authorized to update this user.");
+    }
+
     const existing = await pool.query(`SELECT * FROM users WHERE id = $1`, [userId]);
 
     if (existing.rows.length === 0) {

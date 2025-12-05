@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { userService } from "./user.service";
+import { Roles } from "../auth/auth.constant";
+import { JwtPayload } from "jsonwebtoken";
 
 const getAllUsers = async (req: Request, res: Response) => {
 
@@ -27,17 +29,18 @@ const updateUser = async (req: Request, res: Response) => {
     try {
 
         const userId = req.params.userId as string;
+        const role = req.user!.role;
+        const authUserId = req.user!.id;
 
         await userService.getUserById(userId as string);
 
-        const updateVehicle = await userService.updateUser(userId as string, req.body);
-
-        delete updateVehicle.password;
+        const updateUser = await userService.updateUser(userId as string, req.body, req.user as JwtPayload);
+        delete updateUser.password;
 
         res.status(200).json({
             success: true,
             message: "User updated successfully",
-            data: updateVehicle
+            data: updateUser
         });
 
     } catch (err: any) {
