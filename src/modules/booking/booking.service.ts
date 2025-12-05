@@ -172,11 +172,11 @@ const autoBookingReturn = async () => {
         `SELECT id, vehicle_id FROM bookings
              WHERE rent_end_date < CURRENT_DATE;`
     );
-    
 
     for (const booking of expiredBookings.rows) {
-        const { id, vehicle_id } = booking;
         
+        const { id, vehicle_id } = booking;
+
         // Update booking status
         await pool.query(
             `UPDATE bookings SET status = 'returned' WHERE id = $1`,
@@ -192,10 +192,19 @@ const autoBookingReturn = async () => {
 
 }
 
+const getActiveBookingByVehicleId = async (vehicleId: string) => {
+    const result = await pool.query(
+        `SELECT * FROM bookings WHERE vehicle_id = $1 and status = 'active'`,
+        [vehicleId]
+    );
+    return result.rows[0];
+}
+
 export const bookingService = {
     getAllBookings,
     createBooking,
     updateBooking,
     getMyBookings,
-    autoBookingReturn
+    autoBookingReturn,
+    getActiveBookingByVehicleId
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { vehicleService } from "./vehicle.service";
+import { bookingService } from "../booking/booking.service";
 
 const createVehicle = async (req: Request, res: Response) => {
     try {
@@ -112,6 +113,12 @@ const deleteVehicle = async (req: Request, res: Response) => {
         const vehicleId = req.params.vehicleId as string;
 
         await vehicleService.getVehicleById(vehicleId as string);
+
+        const actionBooking = await bookingService.getActiveBookingByVehicleId(vehicleId as string);
+
+        if (actionBooking) {
+            throw new Error('Vehicle is currently in use.');
+        }
 
         await vehicleService.deleteVehicle(vehicleId as string);
 
