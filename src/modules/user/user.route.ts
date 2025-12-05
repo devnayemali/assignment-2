@@ -6,5 +6,6 @@ import { Roles } from "../auth/auth.constant";
 const router = Router();
 
 router.get('/', auth(Roles.ADMIN), userController.getAllUsers);
+router.put('/:userId', auth(Roles.ADMIN, Roles.CUSTOMER), userController.updateUser);
 
 export const userRouter = router;
