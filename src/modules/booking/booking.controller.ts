@@ -46,6 +46,8 @@ const getAllBookings = async (req: Request, res: Response) => {
             message = "Bookings retrieved successfully";
         }
 
+        await bookingService.autoBookingReturn() // run auto booking return;
+
         if (bookings.length === 0) {
             res.status(200).json({
                 success: true,
@@ -126,7 +128,6 @@ const updateBooking = async (req: Request, res: Response) => {
     }
 
 }
-
 
 export const bookingController = {
     createBooking,

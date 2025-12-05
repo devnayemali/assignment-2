@@ -71,7 +71,8 @@ const getAllBookings = async () => {
 
             -- Vehicle details
             v.vehicle_name,
-            v.registration_number
+            v.registration_number,
+            v.availability_status
 
         FROM bookings b
         LEFT JOIN users u ON b.customer_id = u.id
@@ -153,7 +154,7 @@ const updateBooking = async (bookingId: string, payload: Record<string, any>) =>
     }
 
     const result = await pool.query(`UPDATE bookings SET status = $1 WHERE id = $2`, [payload.status, bookingId]);
-    
+
     if (result.rowCount === 0) {
         throw new Error("Failed to update booking.");
     }
@@ -164,10 +165,37 @@ const updateBooking = async (bookingId: string, payload: Record<string, any>) =>
 
 };
 
+const autoBookingReturn = async () => {
+
+    // Get expired bookings
+    const expiredBookings = await pool.query(
+        `SELECT id, vehicle_id FROM bookings
+             WHERE rent_end_date < CURRENT_DATE;`
+    );
+    
+
+    for (const booking of expiredBookings.rows) {
+        const { id, vehicle_id } = booking;
+        
+        // Update booking status
+        await pool.query(
+            `UPDATE bookings SET status = 'returned' WHERE id = $1`,
+            [id]
+        );
+
+        // Free vehicle
+        await pool.query(
+            `UPDATE vehicles SET availability_status = 'available' WHERE id = $1`,
+            [vehicle_id]
+        );
+    }
+
+}
 
 export const bookingService = {
     getAllBookings,
     createBooking,
     updateBooking,
-    getMyBookings
+    getMyBookings,
+    autoBookingReturn
 }
