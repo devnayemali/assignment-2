@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { userService } from "../auth/user/user.service";
 import { vehicleService } from "./vehicle.service";
 
 const createVehicle = async (req: Request, res: Response) => {
@@ -58,15 +57,11 @@ const getAllVehicles = async (req: Request, res: Response) => {
 
 }
 
-const getVehicleById = async (req: Request, res: Response) => {
+const getSingleVehicle = async (req: Request, res: Response) => {
 
     try {
 
         const vehicle = await vehicleService.getVehicleById(req.params.vehicleId as string);
-
-        if (!vehicle) {
-            throw new Error('Vehicle not found.');
-        }
 
         vehicle.daily_rent_price = Number(vehicle.daily_rent_price);
 
@@ -85,8 +80,34 @@ const getVehicleById = async (req: Request, res: Response) => {
 
 }
 
+const updateVehicle = async (req: Request, res: Response) => {
+
+    try {
+
+        const vehicleId = req.params.vehicleId as string;
+
+        await vehicleService.getVehicleById(vehicleId as string);
+
+        const updateVehicle = await vehicleService.updateVehicle(vehicleId as string, req.body);
+
+        res.status(200).json({
+            success: true,
+            message: "Vehicle updated successfully",
+            data: updateVehicle
+        });
+
+    } catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+
+}
+
 export const vehicleController = {
     createVehicle,
     getAllVehicles,
-    getVehicleById
+    getSingleVehicle,
+    updateVehicle
 }
