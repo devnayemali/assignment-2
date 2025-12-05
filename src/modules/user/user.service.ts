@@ -111,11 +111,10 @@ const updateUser = async (userId: string, payload: Record<string, unknown>, auth
 };
 
 
-const deleteVehicle = async (vehicleId: string) => {
-
+const deleteUser = async (userId: string) => {
     const result = await pool.query(
-        `DELETE FROM vehicles WHERE id = $1;`,
-        [vehicleId]
+        `DELETE FROM users WHERE id = $1;`,
+        [userId]
     );
     return result;
 };
@@ -124,5 +123,6 @@ export const userService = {
     getAllUsers,
     getUserByEmail,
     getUserById,
-    updateUser
+    updateUser,
+    deleteUser
 }
