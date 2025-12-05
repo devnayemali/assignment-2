@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../../database/database";
 import jwt from "jsonwebtoken";
+import config from "../../config";
 
 const validRoles = ['admin', 'customer'] as const;
 
@@ -74,8 +75,7 @@ const userLogin = async (email: string, password: string) => {
         role: user.role
     }
 
-    const secretKey = "devnayemali";
-    const token = jwt.sign(jwtPayload, secretKey, { expiresIn: '7d' });
+    const token = jwt.sign(jwtPayload, config.secret_key as string, { expiresIn: '7d' });
 
     delete user.password;
 

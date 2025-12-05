@@ -1,11 +1,11 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import initDB, { pool } from './database/database';
 import { authRouter } from './modules/auth/auth.route';
 import { userRouter } from './modules/user/user.route';
-import auth from './middleware/auth';
+import config from './config';
 
 const app = express()
-const port = 3000;
+const port = config.port;
 
 app.use(express.json());
 

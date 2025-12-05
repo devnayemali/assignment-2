@@ -1,7 +1,9 @@
+
 import { Pool } from "pg";
+import config from "../config";
 
 export const pool = new Pool({
-    connectionString: 'postgresql://neondb_owner:npg_poue56wFyCIT@ep-green-breeze-a8hws7hp-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require'
+    connectionString: `${config.connection_string}`
 });
 
 

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { Jwt, JwtPayload } from "jsonwebtoken";
 import { pool } from "../database/database";
+import config from "../config";
 
 const auth = (...roles: string[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -11,7 +12,7 @@ const auth = (...roles: string[]) => {
                 return res.status(401).json({ success: false, message: 'Unauthorized' });
             }
 
-            const decoded = jwt.verify(token, 'devnayemali') as JwtPayload;
+            const decoded = jwt.verify(token, config.secret_key as string) as JwtPayload;
 
             const user = await pool.query(`SELECT * FROM users WHERE email = $1;`, [decoded.email]);
             if (user.rows.length === 0) {
