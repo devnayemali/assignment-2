@@ -58,7 +58,35 @@ const getAllVehicles = async (req: Request, res: Response) => {
 
 }
 
+const getVehicleById = async (req: Request, res: Response) => {
+
+    try {
+
+        const vehicle = await vehicleService.getVehicleById(req.params.vehicleId as string);
+
+        if (!vehicle) {
+            throw new Error('Vehicle not found.');
+        }
+
+        vehicle.daily_rent_price = Number(vehicle.daily_rent_price);
+
+        res.status(200).json({
+            success: true,
+            message: "Vehicle retrieved successfully",
+            data: vehicle
+        });
+
+    } catch (err: any) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+
+}
+
 export const vehicleController = {
     createVehicle,
-    getAllVehicles
+    getAllVehicles,
+    getVehicleById
 }

@@ -35,6 +35,8 @@ const createVehicle = async (payload: Record<string, unknown>) => {
         [vehicle_name, type, registration_number, daily_rent_price, availability_status]
     );
 
+    result.rows[0].daily_rent_price = Number(result.rows[0].daily_rent_price);
+
     return result.rows[0];
 }
 
@@ -44,10 +46,13 @@ const getAllVehicles = async () => {
         `SELECT * FROM vehicles;`
     );
 
+    result.rows.forEach((vehicle) => {
+        vehicle.daily_rent_price = Number(vehicle.daily_rent_price);
+    });
+
     return result.rows;
 };
 
-// get user by email
 const getVehicleByRegistrationNumber = async (registrationNumber: string) => {
     const result = await pool.query(
         `SELECT * FROM vehicles WHERE registration_number = $1;`,
@@ -56,9 +61,21 @@ const getVehicleByRegistrationNumber = async (registrationNumber: string) => {
     return result;
 }
 
+const getVehicleById = async (vehicleId: string) => {
+    const result = await pool.query(
+        `SELECT * FROM vehicles WHERE id = $1;`,
+        [vehicleId]
+    );
+
+    result.rows[0].daily_rent_price = Number(result.rows[0].daily_rent_price);
+
+    return result.rows[0];
+}
+
 
 export const vehicleService = {
     getAllVehicles,
     createVehicle,
-    getVehicleByRegistrationNumber
+    getVehicleByRegistrationNumber,
+    getVehicleById
 }
