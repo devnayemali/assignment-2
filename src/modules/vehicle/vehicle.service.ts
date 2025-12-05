@@ -38,10 +38,10 @@ const createVehicle = async (payload: Record<string, unknown>) => {
     return result.rows[0];
 }
 
-const getAllUsers = async () => {
+const getAllVehicles = async () => {
 
     const result = await pool.query(
-        `SELECT id, name, email, phone, role FROM users;`
+        `SELECT * FROM vehicles;`
     );
 
     return result.rows;
@@ -58,7 +58,7 @@ const getVehicleByRegistrationNumber = async (registrationNumber: string) => {
 
 
 export const vehicleService = {
-    getAllUsers,
+    getAllVehicles,
     createVehicle,
     getVehicleByRegistrationNumber
 }

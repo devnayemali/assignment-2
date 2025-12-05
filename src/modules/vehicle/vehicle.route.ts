@@ -5,6 +5,7 @@ import { Roles } from "../auth/auth.constant";
 
 const router = Router();
 
+router.get('/', vehicleController.getAllVehicles);
 router.post('/', auth(Roles.ADMIN), vehicleController.createVehicle);
 
 export const vehicleRoute = router;

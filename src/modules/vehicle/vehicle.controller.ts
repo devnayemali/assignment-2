@@ -29,16 +29,24 @@ const createVehicle = async (req: Request, res: Response) => {
     }
 }
 
-const getAllUsers = async (req: Request, res: Response) => {
+const getAllVehicles = async (req: Request, res: Response) => {
 
     try {
 
-        const users = await userService.getAllUsers();
+        const vehicles = await vehicleService.getAllVehicles();
+
+        if (vehicles.length === 0) {
+            res.status(200).json({
+                success: true,
+                message: "No vehicles found",
+                data: []
+            });
+        }
 
         res.status(200).json({
             success: true,
-            message: "Users retrieved successfully",
-            data: users
+            message: "Vehicles retrieved successfully",
+            data: vehicles
         });
 
     } catch (err: any) {
@@ -52,5 +60,5 @@ const getAllUsers = async (req: Request, res: Response) => {
 
 export const vehicleController = {
     createVehicle,
-    getAllUsers
+    getAllVehicles
 }
