@@ -117,7 +117,7 @@ const deleteVehicle = async (req: Request, res: Response) => {
         const actionBooking = await bookingService.getActiveBookingByVehicleId(vehicleId as string);
 
         if (actionBooking) {
-            throw new Error('Vehicle is currently in use.');
+            throw new Error('This vehicle has active booking. Cannot delete.');
         }
 
         await vehicleService.deleteVehicle(vehicleId as string);
