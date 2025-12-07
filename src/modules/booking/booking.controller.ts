@@ -3,6 +3,8 @@ import { bookingService } from "./booking.service";
 import { userService } from "../user/user.service";
 import { vehicleService } from "../vehicle/vehicle.service";
 import { Roles } from "../auth/auth.constant";
+import { vehicleController } from "../vehicle/vehicle.controller";
+import { JwtPayload } from "jsonwebtoken";
 
 const createBooking = async (req: Request, res: Response) => {
     try {
@@ -12,6 +14,9 @@ const createBooking = async (req: Request, res: Response) => {
         await userService.getUserById(customer_id as string);
 
         const vehicle = await vehicleService.getVehicleById(vehicle_id as string);
+        if (vehicle?.availability_status === "booked") {
+            throw new Error('This vehicle is already booked. Please select another vehicle.');
+        }
 
         const booking = await bookingService.createBooking(req.body, vehicle);
 
@@ -77,7 +82,13 @@ const updateBooking = async (req: Request, res: Response) => {
 
         const bookingId = req.params.bookingId as string;
 
-        const updateBooking = await bookingService.updateBooking(bookingId as string, req.body);
+        const booking = await bookingService.getBookingById(bookingId as string);
+
+        if (Number(booking.customer_id) !== req!.user!.id && req!.user!.role !== Roles.ADMIN) {
+            throw new Error('You are not authorized to update this booking.');
+        }
+
+        const updateBooking = await bookingService.updateBooking(bookingId as string, req.body, req.user as JwtPayload);
 
         if (req?.body?.status == 'cancelled') {
             res.status(200).json({
@@ -96,6 +107,10 @@ const updateBooking = async (req: Request, res: Response) => {
         }
 
         if (req?.body?.status == 'returned') {
+
+            if (req.user!.role !== Roles.ADMIN) {
+                throw new Error('You are not authorized to update this booking.');
+            }
 
             const vehicleId = updateBooking.vehicle_id;
             await vehicleService.getVehicleById(vehicleId);

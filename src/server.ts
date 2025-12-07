@@ -15,7 +15,7 @@ app.use(express.json());
 initDB();
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.send('Assignment API')
 });
 
 app.use('/api/v1/auth', authRouter);

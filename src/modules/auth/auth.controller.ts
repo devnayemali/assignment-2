@@ -9,7 +9,7 @@ const createUser = async (req: Request, res: Response) => {
 
         const checkUser = await authService.getUserByEmail(email as string);
         if (checkUser.rowCount === 1) {
-            throw new Error('User already exists. Please login.');
+            throw new Error('User already exists.');
         }
 
         const user = await authService.createUser(req.body);

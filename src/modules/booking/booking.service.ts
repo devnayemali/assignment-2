@@ -1,3 +1,4 @@
+import { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../database/database";
 
 interface BookingPayload {
@@ -141,7 +142,7 @@ const getMyBookings = async (userId: string) => {
     }));
 };
 
-const updateBooking = async (bookingId: string, payload: Record<string, any>) => {
+const updateBooking = async (bookingId: string, payload: Record<string, any>, user: JwtPayload) => {
 
     const existing = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [bookingId]);
 
@@ -153,17 +154,36 @@ const updateBooking = async (bookingId: string, payload: Record<string, any>) =>
         throw new Error("Status is required.");
     }
 
+    const booking = existing.rows[0];
+
+    if (payload.status == "cancelled") {
+        if (booking.rent_start_date <= new Date()) {
+            throw new Error("You can only cancel booking before start date.");
+        }
+    }
+
     const result = await pool.query(`UPDATE bookings SET status = $1 WHERE id = $2`, [payload.status, bookingId]);
 
     if (result.rowCount === 0) {
         throw new Error("Failed to update booking.");
     }
 
-    const updated = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [bookingId]);
+    const updatedBooking = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [bookingId]);
 
-    return updated.rows[0];
+    return updatedBooking.rows[0];
 
 };
+
+const getBookingById = async (bookingId: string) => {
+
+    const existing = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [bookingId]);
+
+    if (existing.rows.length === 0) {
+        throw new Error("Booking not found.");
+    }
+
+    return existing.rows[0];
+}
 
 const autoBookingReturn = async () => {
 
@@ -174,7 +194,7 @@ const autoBookingReturn = async () => {
     );
 
     for (const booking of expiredBookings.rows) {
-        
+
         const { id, vehicle_id } = booking;
 
         // Update booking status
@@ -215,5 +235,6 @@ export const bookingService = {
     getMyBookings,
     autoBookingReturn,
     getActiveBookingByVehicleId,
-    getActiveBookingByUserId
+    getActiveBookingByUserId,
+    getBookingById
 }

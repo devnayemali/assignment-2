@@ -16,6 +16,22 @@ interface CreateUserPayload {
 const createUser = async (payload: CreateUserPayload) => {
     const { name, email, password, phone, role = 'customer' } = payload;
 
+    if (!name) {
+        throw new Error('Name is required.');
+    }
+
+    if (!email) {
+        throw new Error('Email is required.');
+    }
+
+    if (!password) {
+        throw new Error('Password is required.');
+    }
+
+    if (!phone) {
+        throw new Error('Phone number is required.');
+    }
+
     if (!email || email !== email.toLowerCase()) {
         throw new Error('Email must contain only lowercase characters.');
     }
