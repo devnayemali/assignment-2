@@ -15,7 +15,7 @@ app.use(express.json());
 initDB();
 
 app.get('/', (req, res) => {
-    res.send('Assignment API')
+    res.send('Vehicle Rental System API')
 });
 
 app.use('/api/v1/auth', authRouter);
