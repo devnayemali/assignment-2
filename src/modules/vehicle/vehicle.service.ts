@@ -110,11 +110,14 @@ const updateVehicle = async (vehicleId: string, payload: Record<string, any>) =>
         throw new Error("Availability status must be available or booked.");
     }
 
-    // Unique registration_number check
+    // Unique registration_number check (ignore current vehicle)
     const check = await pool.query(
-        `SELECT id FROM vehicles WHERE registration_number = $1 AND id <> $2`,
+        `SELECT id 
+     FROM vehicles 
+     WHERE registration_number = $1 AND id <> $2`,
         [updated.registration_number, vehicleId]
     );
+
     if (check.rows.length > 0) {
         throw new Error("Registration number already exists.");
     }
